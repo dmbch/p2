@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+FILE="$DIR/$( basename "${BASH_SOURCE[0]}")"
+set -e
+
+ls -1 --ignore="git-shell-commands" --ignore="debug" --ignore="tmp" "$HOME"
+
+echo; exit 0

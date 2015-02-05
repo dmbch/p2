@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+FILE="$DIR/$( basename "${BASH_SOURCE[0]}")"
+set -e
+
+# provide usage hints if needed
+
+function usage()
+{
+    printf "USAGE: create <repo>\n<repo> repo name, must *not* exist\n\n"
+    exit 1
+}
+test $# -eq 1 || usage
+
+
+# determine and verify repository path
+
+if [[ -d "$( dirname "$1" )" ]]; then
+    REPOSITORY="$1"
+else
+    REPOSITORY="$HOME/$1"
+fi
+
+if [[ -d "$REPOSITORY" ]]; then
+    printf "ERROR: Repository already exists: '$1'\n\n"
+    exit 1
+fi
+
+
+# initialize bare git repository
+
+git init --bare "$REPOSITORY"
+git --git-dir="$REPOSITORY" config receive.denycurrentbranch ignore
+
+
+# configure post-receive hook
+
+HOOKFILE="$REPOSITORY/hooks/post-receive"
+
+cat << "__EOT__" > "$HOOKFILE"
+#!/bin/sh
+read OLDREV NEWREV REVNAME
+$HOME/git-shell-commands/deploy $PWD $REVNAME
+__EOT__
+
+chmod +x "$HOOKFILE"
+
+
+# provide feedback
+
+printf "\nRepository created: '$1'\n\n"
+
+exit 0

@@ -1,0 +1,36 @@
+VAGRANTFILE_API_VERSION = "2"
+
+user = ENV["USER"]
+home = "/home/" + user
+keyfile = ENV["HOME"] + "/.ssh/id_rsa.pub"
+key = File.exist?(keyfile) ? File.read(keyfile) : ""
+
+script = <<-SCRIPT
+  apt-get update
+  apt-get dist-upgrade -y
+  apt-get install -y git
+
+  adduser --disabled-password --gecos "" \
+          --shell "$( command -v git-shell )" \
+          "#{user}"
+
+  if [[ -d "#{home}" ]]; then
+
+    ln -s "/vagrant" "#{home}/git-shell-commands"
+
+    touch "#{home}/.hushlogin"
+
+    if [[ -n "#{key}" ]]; then
+
+      mkdir -m 700 "#{home}/.ssh"
+      echo "#{key}" > "#{home}/.ssh/authorized_keys"
+      chmod 600 "#{home}/.ssh/authorized_keys"
+      chown -R "#{user}" "#{home}/.ssh"
+    fi
+  fi
+SCRIPT
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  config.vm.box = "ubuntu/trusty64"
+  config.vm.provision "shell", inline: script
+end

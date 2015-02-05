@@ -1,0 +1,112 @@
+#!/usr/bin/env bash
+DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+FILE="$DIR/$( basename "${BASH_SOURCE[0]}")"
+set -e
+
+# provide usage hints if needed
+
+function usage()
+{
+    printf "USAGE: deploy <repo> <branch>\n"
+    printf "<repo> repo name (or path)\n<branch> git branch\n\n"
+    exit 1
+}
+test $# -eq 2 || usage
+
+
+# determine and check repository path
+
+if [[ -d "$1" ]]; then
+
+    REPOSITORY="$1"
+else
+
+    REPOSITORY="$HOME/$1"
+fi
+
+if [[ ! -d "$REPOSITORY" ]]; then
+
+    printf "ERROR: Repository not found: '$1'\n\n"
+    exit 1
+fi
+
+
+# determine/define build params
+
+PROJECT="$( basename $1 )"
+BRANCH="$( basename $2 )"
+WORKTREE="$( mktemp -d )"
+ISODATE="$( date -u +"%Y-%m-%d_%H-%M-%S" )"
+
+
+# enable debug mode
+
+DEBUG=false
+
+if [[ -d "$HOME/debug" ]]; then
+
+    DEBUG=true
+fi
+
+
+# configure debug logging
+
+if $DEBUG; then
+
+    if [[ -z "$P2G_DEBUG_DIR" ]]; then
+
+        export P2G_DEBUG_DIR="$HOME/debug/"
+    fi
+
+    export P2G_DEBUG_BASENAME="$PROJECT-$BRANCH-$ISODATE"
+
+    exec &> >( tee "$P2G_DEBUG_DIR/$P2G_DEBUG_BASENAME.log" )
+fi
+
+
+# define cleanup functions
+
+function cleanup {
+
+    rm -rf "$WORKTREE"
+}
+
+function cleanup_debug {
+
+    tar cfz "$P2G_DEBUG_DIR/$P2G_DEBUG_BASENAME.tgz" "$WORKTREE" &> /dev/null
+
+    cleanup
+}
+
+
+# (re-)configure error/exit handling
+
+if $DEBUG; then
+
+    trap cleanup_debug ERR EXIT
+else
+
+    trap cleanup ERR EXIT
+fi
+
+set +e
+
+
+# create work tree
+
+git clone "$REPOSITORY" "$WORKTREE" --branch "$BRANCH" --single-branch --recursive
+
+
+# invoke custom build/deployment script
+
+if [[ -x "$WORKTREE/p2file" ]]; then
+
+    sh -c "cd $WORKTREE && ./p2file $BRANCH"
+fi
+
+
+# provide feedback
+
+printf "\nBuilt/deployed repository: '$1'\n\n"
+
+exit 0

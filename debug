@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+FILE="$DIR/$( basename "${BASH_SOURCE[0]}")"
+set -e
+
+# check and interactively manipulate debug dir
+
+DEBUGDIR="$HOME/debug"
+
+if [[ -d "$DEBUGDIR" ]]; then
+
+    # list/select log files
+
+    printf "Select log file or '0' to disable debugging: \n"
+
+    cd "$DEBUGDIR"
+    select FILENAME in *.log; do
+
+        if [[ -f "$FILENAME" ]]; then
+
+            # page/search through log file
+
+            less "$FILENAME"
+        else
+
+            # confirm data deletion
+
+            read -p "Really disable and purge debug data? [y/N] " -n 1
+
+            if [[ $REPLY =~ ^[Yy]$ ]]; then
+
+                # delete debug dir
+
+                rm -rf "$DEBUGDIR"
+
+                # provide feedback
+
+                printf "\nDebugging disabled\n"
+            else
+
+                printf "\n\n"; exit 1
+            fi
+        fi
+        break
+    done
+
+    cd - &> /dev/null
+    echo
+else
+
+    # confirm debug mode activation
+
+    read -p "Currently not debugging. Enable? [y/N] " -n 1
+
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+
+        printf "\n\n"; exit 1
+    fi
+
+
+    # create debug dir
+
+    mkdir "$DEBUGDIR"
+
+
+    # provide feedback
+
+    printf "\nDebugging enabled\n\n"
+fi
+
+
+exit 0

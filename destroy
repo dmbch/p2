@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+FILE="$DIR/$( basename "${BASH_SOURCE[0]}")"
+set -e
+
+# provide usage hints if needed
+
+function usage()
+{
+    printf "USAGE: destroy <repo>\n<repo> repo name, must exist\n\n"
+    exit 1
+}
+test $# -eq 1 || usage
+
+
+# determine and verify repository path
+
+if [[ -d "$1" ]]; then
+    REPOSITORY="$1"
+else
+    REPOSITORY="$HOME/$1"
+fi
+
+if [[ ! -d "$REPOSITORY" ]]; then
+    printf "ERROR: Repository not found: '$1'\n\n"
+    exit 1
+fi
+
+
+# interactively delete repository
+
+read -p "Really destroy repository: '$1'? [y/N] " -n 1
+
+if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    echo; exit 1
+fi
+
+rm -rf "$REPOSITORY" "/tmp/$USER/$(basename $1)"
+
+
+# provide feedback
+
+printf "\nDestroyed repository: '$1'\n\n"
+
+exit 0
