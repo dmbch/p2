@@ -10,9 +10,12 @@ script = <<-SCRIPT
   apt-get dist-upgrade -y
   apt-get install -y git
 
+  curl -sSL https://get.docker.com/ubuntu/ | sh
+
   adduser --disabled-password --gecos "" \
           --shell "$( command -v git-shell )" \
           "#{user}"
+  adduser "#{user}" docker
 
   if [[ -d "#{home}" ]]; then
 

@@ -53,14 +53,14 @@ fi
 
 if $DEBUG; then
 
-    if [[ -z "$P2G_DEBUG_DIR" ]]; then
+    if [[ -z "$P2_DEBUG_DIR" ]]; then
 
-        export P2G_DEBUG_DIR="$HOME/debug/"
+        export P2_DEBUG_DIR="$HOME/debug/"
     fi
 
-    export P2G_DEBUG_BASENAME="$PROJECT-$BRANCH-$ISODATE"
+    export P2_DEBUG_BASENAME="$PROJECT-$BRANCH-$ISODATE"
 
-    exec &> >( tee "$P2G_DEBUG_DIR/$P2G_DEBUG_BASENAME.log" )
+    exec &> >( tee "$P2_DEBUG_DIR/$P2_DEBUG_BASENAME.log" )
 fi
 
 
@@ -73,7 +73,7 @@ function cleanup {
 
 function cleanup_debug {
 
-    tar cfz "$P2G_DEBUG_DIR/$P2G_DEBUG_BASENAME.tgz" "$WORKTREE" &> /dev/null
+    tar cfz "$P2_DEBUG_DIR/$P2_DEBUG_BASENAME.tgz" "$WORKTREE" &> /dev/null
 
     cleanup
 }
@@ -94,14 +94,21 @@ set +e
 
 # create work tree
 
-git clone "$REPOSITORY" "$WORKTREE" --branch "$BRANCH" --single-branch --recursive
+git clone "$REPOSITORY" "$WORKTREE" --branch "$BRANCH" --single-branch --recursive --quiet
 
 
 # invoke custom build/deployment script
 
 if [[ -x "$WORKTREE/p2file" ]]; then
 
-    sh -c "cd $WORKTREE && ./p2file $BRANCH"
+    if [[ -x "/usr/bin/docker" ]]; then
+
+        docker run -v "$WORKTREE:/opt/work" -t ubuntu /opt/work/p2file "$BRANCH" "$PROJECT"
+
+    else
+
+        sh -c ""$WORKTREE/p2file" "$BRANCH" "$PROJECT""
+    fi
 fi
 
 
