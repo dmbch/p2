@@ -40,7 +40,7 @@ HOOKFILE="$REPOSITORY/hooks/post-receive"
 cat << "__EOT__" > "$HOOKFILE"
 #!/bin/sh
 read OLDREV NEWREV REVNAME
-$HOME/git-shell-commands/deploy $PWD $REVNAME
+$HOME/git-shell-commands/deploy "$PWD" "$REVNAME"
 __EOT__
 
 chmod +x "$HOOKFILE"

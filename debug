@@ -27,19 +27,18 @@ if [[ -d "$DEBUGDIR" ]]; then
 
             read -p "Really disable and purge debug data? [y/N] " -n 1
 
-            if [[ $REPLY =~ ^[Yy]$ ]]; then
-
-                # delete debug dir
-
-                rm -rf "$DEBUGDIR"
-
-                # provide feedback
-
-                printf "\nDebugging disabled\n"
-            else
+            if [[ ! $REPLY =~ ^[Yy]$ ]]; then
 
                 printf "\n\n"; exit 1
             fi
+
+            # delete debug dir
+
+            rm -rf "$DEBUGDIR"
+
+            # provide feedback
+
+            printf "\nDebugging disabled\n"
         fi
         break
     done
