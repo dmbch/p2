@@ -20,7 +20,7 @@ $ git-shell
  ) __/ / __/
 (__)  (____)  https://github.com/dmbch/p2
 
-Saúde, dmbch! P2 is a git repo manager.
+Saúde, dmbch! p2 is a git repo manager.
 Available commands (type 'exit' to leave):
 
 create
@@ -34,9 +34,20 @@ git>
 ```
 
 
-Now, you can create (list, destroy) bare git repos that you can use as remote build machines. Every repo you create will be wired to work with p2 automatically:
+Now, you can create (list, destroy) bare git repos that you can use for remote builds. Every repo you create will be wired to work with p2 automatically.
 
-Whenever you `git push` to it, the p2 deploy script will be run which in turn checks if there is an executable `p2file` in your repo. If `p2file` exists, it'll be called with the current git branch, project and repo location as arguments.
+Whenever you `git push` to it, the p2 deploy script will be run. p2 checks if there is an executable `p2file` in your repo. If `p2file` exists, it'll be called with current branch and project basename as arguments.
+
+
+```shell
+#!/usr/bin/env bash
+# <repo>/p2file
+
+BRANCH=$1
+PROJECT=$2
+
+echo "$PROJECT:$BRANCH"
+```
 
 
 ## Commands

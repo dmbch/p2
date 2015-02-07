@@ -10,7 +10,7 @@ cat << "__EOT__"
 (__)  (____)  https://github.com/dmbch/p2
 __EOT__
 
-printf "\nSaúde, $USER! P2 is a git repo manager.\n"
+printf "\nSaúde, $USER! p2 is a git repo manager.\n"
 printf "Available commands (type 'exit' to leave):\n\n"
 
 
